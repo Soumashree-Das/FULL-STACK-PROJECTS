@@ -15,31 +15,12 @@ function LoginUser() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   setError('');
-    
-  //   try {
-  //     const response = await axios.post('http://localhost:8080/user/login', formData);
-      
-  //     // Store both token and user data
-  //     localStorage.setItem('token', response.data.token);
-  //     localStorage.setItem('user', JSON.stringify(response.data.user));
-      
-  //     navigate('/'); // Redirect to home/dashboard
-  //   } catch (err) {
-  //     console.error("Login failed:", err.response?.data || err.message);
-  //     setError(err.response?.data?.message || "Login failed. Please try again.");
-  //   }
-  // };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     
     try {
-      const response = await axios.post('http://localhost:8080/user/login', formData);
+      const response = await axios.post('https://full-stack-projects-yvmx.onrender.com/user/login', formData);
       
       // Use the login function from AuthContext
       login(response.data.token, response.data.user);

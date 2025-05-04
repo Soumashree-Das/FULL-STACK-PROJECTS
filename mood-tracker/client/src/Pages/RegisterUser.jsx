@@ -12,26 +12,10 @@ function RegisterUser() {
 
   const navigate = useNavigate();
 
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   const { name, email, password, phoneNumber } = formData;
-  //   console.log(formData);
-  //   axios.post('http://localhost:8080/user/register/',formData)
-  //   .then(result => console.log(result))
-  //   // .catch(err => console.log(err))
-  //   if(Response.status === 200){
-  //     alert("User successfully registered!")    
-  //   }
-  //   else if(Response.status === 400){
-  //     alert("User already exists. Please login to continue!")
-  //     navigate('./login')
-  //   }
-  // }
-
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log("Submitting form data:", formData);
-    axios.post('http://localhost:8080/user/register', formData)
+    axios.post('https://full-stack-projects-yvmx.onrender.com/user/register', formData)
       .then(result => {
         console.log("Registration successful:", result.data);
          // redirect after successful registration
