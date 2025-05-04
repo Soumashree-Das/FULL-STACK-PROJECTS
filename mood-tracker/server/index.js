@@ -8,9 +8,9 @@ import JournalRouters from "./src/routes/journalEntry.routes.js";
 const app = express();
 
 app.use(cors({
-    origin: 'https://full-stack-projects-nine.vercel.app/', // Your frontend URL
-    credentials: true // If using cookies/sessions
-  }));
+    origin:'https://full-stack-projects-nine.vercel.app/',
+    credentials:true
+}))
 
 app.options("*", cors()); // enable pre-flight for all routes
 
