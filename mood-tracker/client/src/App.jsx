@@ -1,6 +1,3 @@
-
-
-
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import AddJournal from '../src/Pages/AddJounral.jsx';
