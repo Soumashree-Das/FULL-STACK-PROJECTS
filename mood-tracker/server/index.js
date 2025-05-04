@@ -8,7 +8,7 @@ import JournalRouters from "./src/routes/journalEntry.routes.js";
 const app = express();
 
 app.use(cors({
-    origin:'https://full-stack-projects-nine.vercel.app/',
+    origin:'https://full-stack-projects-nine.vercel.app',
     credentials:true
 }))
 
