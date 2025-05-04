@@ -1,511 +1,746 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { Line, Bar } from 'react-chartjs-2';
-import { Chart, registerables } from 'chart.js';
-import Calendar from 'react-calendar';
-import 'react-calendar/dist/Calendar.css';
-import '../CSS/AccountPage.css'; // For calendar dot styling
+// import { useState, useEffect } from 'react';
+// import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+// import { PieChart, Pie, Cell, Legend } from 'recharts';
 
-Chart.register(...registerables);
+// const AccountPage = () => {
+//   const [user, setUser] = useState(null);
+//   const [moodData, setMoodData] = useState([]);
+//   const [moodFrequency, setMoodFrequency] = useState({});
+//   const [loading, setLoading] = useState(true);
+//   const [error, setError] = useState(null);
+//   const [timeRange, setTimeRange] = useState('7days');
+
+//   // Color scheme for pie chart
+//   const COLORS = {
+//     'Joyful': '#FF9900',
+//     'Happy': '#66BB6A',
+//     'Calm': '#4FC3F7',
+//     'Neutral': '#FF69B4',
+//     'Anxious': '#FFC107',
+//     'Angry': '#F44336',
+//     'Sad': '#9C27B0',
+//     'Depressed': '#607D8B'
+//   };
+
+//   // Fetch user data and mood data from APIs
+//   useEffect(() => {
+//     const fetchData = async () => {
+//       try {
+//         setLoading(true);
+//         const token = localStorage.getItem('token');
+        
+//         if (!token) {
+//           // Redirect to login in a real app
+//           window.location.href = '/login';
+//           return;
+//         }
+  
+//         // Fetch user profile data
+//         const userResponse = await fetch('http://localhost:8080/user/profile', {
+//           headers: {
+//             'Authorization': `Bearer ${token}`
+//           }
+//         });
+        
+//         if (!userResponse.ok) {
+//           throw new Error('Failed to fetch user profile');
+//         }
+        
+//         const userData = await userResponse.json();
+//         setUser(userData);
+        
+//         // Fetch mood data based on time range
+//         const moodDataResponse = await fetch(`http://localhost:8080/journal/mood-data?range=${timeRange}`, {
+//           headers: {
+//             'Authorization': `Bearer ${token}`
+//           }
+//         });
+        
+//         if (!moodDataResponse.ok) {
+//           throw new Error('Failed to fetch mood data');
+//         }
+        
+//         const moodDataResult = await moodDataResponse.json();
+//         setMoodData(moodDataResult);
+        
+//         // Fetch mood frequency data
+//         const moodFrequencyResponse = await fetch(`http://localhost:8080/journal/mood-frequency?range=${timeRange}`, {
+//           headers: {
+//             'Authorization': `Bearer ${token}`
+//           }
+//         });
+        
+//         if (!moodFrequencyResponse.ok) {
+//           throw new Error('Failed to fetch mood frequency data');
+//         }
+        
+//         const moodFrequencyResult = await moodFrequencyResponse.json();
+//         setMoodFrequency(moodFrequencyResult);
+        
+//         setLoading(false);
+//       } catch (err) {
+//         console.error("Error fetching data:", err);
+//         setError(err.message);
+//         setLoading(false);
+//       }
+//     };
+  
+//     fetchData();
+//   }, [timeRange]);
+
+//   const handleLogout = () => {
+//     localStorage.removeItem('token');
+//     window.location.href = '/login';
+//   };
+
+//   // Calculate mood statistics
+//   const calculateStats = () => {
+//     // Most common mood
+//     let mostCommonMood = { mood: 'Neutral', count: 0 };
+//     Object.entries(moodFrequency).forEach(([mood, count]) => {
+//       if (count > mostCommonMood.count) {
+//         mostCommonMood = { mood, count };
+//       }
+//     });
+    
+//     // Calculate average mood score
+//     const moodScores = {
+//       'Joyful': 7,
+//       'Happy': 6,
+//       'Calm': 5,
+//       'Neutral': 4,
+//       'Anxious': 3,
+//       'Angry': 2,
+//       'Sad': 2,
+//       'Depressed': 1
+//     };
+    
+//     let totalScore = 0;
+//     let totalEntries = 0;
+    
+//     Object.entries(moodFrequency).forEach(([mood, count]) => {
+//       if (moodScores[mood]) {
+//         totalScore += moodScores[mood] * count;
+//         totalEntries += count;
+//       }
+//     });
+    
+//     const averageScore = totalEntries > 0 ? (totalScore / totalEntries).toFixed(2) : '0.00';
+    
+//     // Recent mood
+//     const recentMood = moodData.length > 0 ? moodData[moodData.length - 1].moodLabel : 'N/A';
+    
+//     return {
+//       mostCommon: mostCommonMood,
+//       average: averageScore,
+//       recent: recentMood,
+//       total: totalEntries
+//     };
+//   };
+
+//   // Get statistics
+//   const stats = calculateStats();
+
+//   // Create data for pie chart
+//   const pieData = Object.entries(moodFrequency).map(([name, value]) => ({
+//     name,
+//     value
+//   }));
+
+//   // Custom tooltip for line chart
+//   const CustomTooltip = ({ active, payload }) => {
+//     if (active && payload && payload.length) {
+//       return (
+//         <div className="bg-white p-2 border border-gray-200 shadow-md rounded">
+//           <p className="font-medium">{payload[0].payload.date}</p>
+//           <p className="text-sm">{payload[0].payload.moodLabel}: {payload[0].value}</p>
+//         </div>
+//       );
+//     }
+//     return null;
+//   };
+
+//   // Y-axis tick formatter to show mood labels instead of numbers
+//   const formatYAxis = (value) => {
+//     const moodLabels = {
+//       1: 'Depressed',
+//       2: 'Sad/Anxious',
+//       3: 'Angry',
+//       4: 'Neutral',
+//       5: 'Calm',
+//       6: 'Happy',
+//       7: 'Joyful'
+//     };
+//     return moodLabels[value] || '';
+//   };
+
+//   if (loading) return (
+//     <div className="flex items-center justify-center min-h-screen bg-gray-50">
+//       <div className="text-xl text-blue-600">Loading your account data...</div>
+//     </div>
+//   );
+
+//   if (error) return (
+//     <div className="flex items-center justify-center min-h-screen bg-gray-50">
+//       <div className="text-xl text-red-500">Error: {error}</div>
+//     </div>
+//   );
+
+//   return (
+//     <div className="min-h-screen bg-gray-50 p-6">
+//       <div className="max-w-6xl mx-auto">
+//         {/* User Profile Section */}
+//         <section className="bg-white rounded-xl shadow-md p-6 mb-6">
+//           <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+//             <div>
+//               <h1 className="text-3xl font-bold text-gray-800 mb-2">
+//                 {user?.name || 'User'}
+//               </h1>
+//               <p className="text-gray-600 mb-1">
+//                 <span className="font-semibold">Email:</span> {user?.email}
+//               </p>
+//               <p className="text-gray-600 mb-1">
+//                 <span className="font-semibold">Phone:</span> {user?.phoneNumber || 'Not provided'}
+//               </p>
+//               <p className="text-gray-600">
+//                 <span className="font-semibold">Member since:</span> {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Unknown'}
+//               </p>
+//             </div>
+//             <button
+//               onClick={handleLogout}
+//               className="mt-4 md:mt-0 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+//             >
+//               Logout
+//             </button>
+//           </div>
+//         </section>
+
+//         {/* Mood Analytics Section */}
+//         <section className="mb-6">
+//           <h2 className="text-2xl font-bold text-gray-800 mb-4">Your Mood Analytics</h2>
+          
+//           {/* Time Range Selector */}
+//           <div className="flex gap-2 mb-6">
+//             <button 
+//               onClick={() => setTimeRange('7days')}
+//               className={`px-4 py-2 rounded-lg ${timeRange === '7days' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+//             >
+//               Last 7 Days
+//             </button>
+//             <button 
+//               onClick={() => setTimeRange('30days')}
+//               className={`px-4 py-2 rounded-lg ${timeRange === '30days' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+//             >
+//               Last 30 Days
+//             </button>
+//             <button 
+//               onClick={() => setTimeRange('all')}
+//               className={`px-4 py-2 rounded-lg ${timeRange === 'all' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+//             >
+//               All Time
+//             </button>
+//           </div>
+
+//           {/* Charts Grid */}
+//           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+//             {/* Mood Trend Chart */}
+//             <div className="bg-white p-6 rounded-xl shadow-md">
+//               <h3 className="text-xl font-semibold text-gray-700 mb-4">Mood Trend</h3>
+//               <div className="h-64">
+//                 {moodData.length > 0 ? (
+//                   <ResponsiveContainer width="100%" height="100%">
+//                     <LineChart data={moodData}>
+//                       <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+//                       <XAxis dataKey="date" />
+//                       <YAxis 
+//                         domain={[1, 7]} 
+//                         tickCount={7} 
+//                         tickFormatter={formatYAxis} 
+//                       />
+//                       <Tooltip content={<CustomTooltip />} />
+//                       <Line 
+//                         type="monotone" 
+//                         dataKey="score" 
+//                         stroke="#3b82f6" 
+//                         strokeWidth={2}
+//                         dot={{ stroke: '#3b82f6', strokeWidth: 2, r: 4, fill: '#fff' }}
+//                         activeDot={{ r: 6, fill: '#3b82f6' }}
+//                       />
+//                     </LineChart>
+//                   </ResponsiveContainer>
+//                 ) : (
+//                   <div className="flex items-center justify-center h-full">
+//                     <p className="text-gray-500">No mood data available for this time period</p>
+//                   </div>
+//                 )}
+//               </div>
+//             </div>
+
+//             {/* Mood Distribution Chart */}
+//             <div className="bg-white p-6 rounded-xl shadow-md">
+//               <h3 className="text-xl font-semibold text-gray-700 mb-4">Mood Distribution</h3>
+//               <div className="h-64">
+//                 {Object.keys(moodFrequency).length > 0 ? (
+//                   <ResponsiveContainer width="100%" height="100%">
+//                     <PieChart>
+//                       <Pie
+//                         data={pieData}
+//                         cx="50%"
+//                         cy="50%"
+//                         labelLine={false}
+//                         outerRadius={80}
+//                         fill="#8884d8"
+//                         dataKey="value"
+//                       >
+//                         {pieData.map((entry, index) => (
+//                           <Cell key={`cell-${index}`} fill={COLORS[entry.name] || '#999'} />
+//                         ))}
+//                       </Pie>
+//                       <Legend />
+//                       <Tooltip />
+//                     </PieChart>
+//                   </ResponsiveContainer>
+//                 ) : (
+//                   <div className="flex items-center justify-center h-full">
+//                     <p className="text-gray-500">No mood distribution data available for this time period</p>
+//                   </div>
+//                 )}
+//               </div>
+//             </div>
+//           </div>
+//         </section>
+
+//         {/* Mood Insights Section */}
+//         <section className="bg-white rounded-xl shadow-md p-6">
+//           <h2 className="text-2xl font-bold text-gray-800 mb-4">Mood Insights</h2>
+          
+//           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+//             {/* Most Common Mood */}
+//             <div className="bg-blue-50 p-4 rounded-lg">
+//               <h3 className="text-blue-600 text-lg font-semibold">Most Common Mood</h3>
+//               <p className="text-gray-700">{stats.mostCommon.mood} ({stats.mostCommon.count} entries)</p>
+//             </div>
+
+//             {/* Average Mood */}
+//             <div className="bg-green-50 p-4 rounded-lg">
+//               <h3 className="text-green-600 text-lg font-semibold">Average Mood</h3>
+//               <p className="text-gray-700">{stats.average}</p>
+//             </div>
+
+//             {/* Recent Mood */}
+//             <div className="bg-purple-50 p-4 rounded-lg">
+//               <h3 className="text-purple-600 text-lg font-semibold">Recent Mood</h3>
+//               <p className="text-gray-700">{stats.recent}</p>
+//             </div>
+
+//             {/* Total Entries */}
+//             <div className="bg-yellow-50 p-4 rounded-lg">
+//               <h3 className="text-yellow-600 text-lg font-semibold">Total Entries</h3>
+//               <p className="text-gray-700">{stats.total}</p>
+//             </div>
+//           </div>
+//         </section>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default AccountPage;
+
+
+import { useState, useEffect } from 'react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, Legend } from 'recharts';
 
 const AccountPage = () => {
-  const [userId, setUserId] = useState(null);
-  const [entries, setEntries] = useState([]);
+  const [user, setUser] = useState(null);
   const [moodData, setMoodData] = useState([]);
-  const [streak, setStreak] = useState(0);
-  const [journaledDates, setJournaledDates] = useState([]);
-  const [recentEntries, setRecentEntries] = useState([]);
+  const [moodFrequency, setMoodFrequency] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [dateRange, setDateRange] = useState('7days');
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [timeRange, setTimeRange] = useState('7days');
+  const [hasEnoughData, setHasEnoughData] = useState(false);
 
-  // Fetch functions remain the same...
-  // Fetch all entries for a user
-  const fetchEntries = async (userId) => {
-    try {
-      const response = await axios.get(`http://localhost:8080/journal/getAllJournals`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching entries:', error);
-      throw error;
-    }
+  // Color scheme for pie chart
+  const COLORS = {
+    'Joyful': '#FF9900',
+    'Happy': '#66BB6A',
+    'Calm': '#4FC3F7',
+    'Neutral': '#FF69B4',
+    'Anxious': '#FFC107',
+    'Angry': '#F44336',
+    'Sad': '#9C27B0',
+    'Depressed': '#607D8B'
   };
 
-  // Fetch mood data
-  const fetchMoodData = async (userId, range) => {
-    try {
-      const response = await axios.get(`http://localhost:8080/journal/mood-data`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        },
-        params: {
-          userId,
-          range
-        }
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching mood data:', error);
-      throw error;
-    }
+  // Demo data for when backend data is insufficient
+  const demoMoodData = [
+    { date: '2025-04-27', score: 5, moodLabel: 'Calm' },
+    { date: '2025-04-28', score: 6, moodLabel: 'Happy' },
+    { date: '2025-04-29', score: 4, moodLabel: 'Neutral' },
+    { date: '2025-04-30', score: 3, moodLabel: 'Anxious' },
+    { date: '2025-05-01', score: 5, moodLabel: 'Calm' },
+    { date: '2025-05-02', score: 7, moodLabel: 'Joyful' },
+    { date: '2025-05-03', score: 6, moodLabel: 'Happy' },
+    { date: '2025-05-04', score: 5, moodLabel: 'Calm' }
+  ];
+
+  const demoMoodFrequency = {
+    'Joyful': 1,
+    'Happy': 2,
+    'Calm': 3,
+    'Neutral': 1,
+    'Anxious': 1,
+    'Sad': 0,
+    'Angry': 0,
+    'Depressed': 0
   };
 
-  // Fetch streak data
-  const fetchStreak = async (userId) => {
-    try {
-      const response = await axios.get(`http://localhost:8080/journal/streak`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        },
-        params: { userId }
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching streak:', error);
-      throw error;
-    }
-  };
-
-  // Fetch journaled dates
-  const fetchJournaledDates = async (userId) => {
-    try {
-      const response = await axios.get(`http://localhost:8080/journal/journal-dates`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        },
-        params: { userId }
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching journal dates:', error);
-      throw error;
-    }
-  };
-
-  // Fetch recent entries
-  const fetchRecentEntries = async (userId, limit) => {
-    try {
-      const response = await axios.get(`http://localhost:8080/journal/recent-entries`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        },
-        params: { userId, limit }
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching recent entries:', error);
-      throw error;
-    }
-  };
-
+  // Fetch user data and mood data from APIs
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // In a real app, you'd get userId from auth context
-        const user = JSON.parse(localStorage.getItem('user'));
-        const currentUserId = user?._id; // Example
+        const token = localStorage.getItem('token');
         
-        if (!currentUserId) {
-          throw new Error('User not authenticated');
+        if (!token) {
+          // Redirect to login in a real app
+          window.location.href = '/login';
+          return;
         }
-
-        setUserId(currentUserId);
+  
+        // Fetch user profile data
+        const userResponse = await fetch('http://localhost:8080/user/profile', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
         
-        // Fetch all data in parallel
-        const [
-          entriesRes, 
-          moodRes, 
-          streakRes, 
-          datesRes, 
-          recentRes
-        ] = await Promise.all([
-          fetchEntries(currentUserId),
-          fetchMoodData(currentUserId, dateRange),
-          fetchStreak(currentUserId),
-          fetchJournaledDates(currentUserId),
-          fetchRecentEntries(currentUserId, 3)
-        ]);
-
-        setEntries(entriesRes.entries || entriesRes); // Ensure this replaces the state, not appends.
-        setMoodData(moodRes);
-        setStreak(streakRes.streak || 0);
-        setJournaledDates(datesRes);
-        setRecentEntries(recentRes);
+        if (!userResponse.ok) {
+          throw new Error('Failed to fetch user profile');
+        }
+        
+        const userData = await userResponse.json();
+        setUser(userData);
+        
+        // Fetch mood data based on time range
+        const moodDataResponse = await fetch(`http://localhost:8080/journal/mood-data?range=${timeRange}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (!moodDataResponse.ok) {
+          throw new Error('Failed to fetch mood data');
+        }
+        
+        const moodDataResult = await moodDataResponse.json();
+        
+        // Check if there's enough data (7+ entries)
+        if (moodDataResult.length >= 7) {
+          setMoodData(moodDataResult);
+          setHasEnoughData(true);
+          
+          // Fetch mood frequency data
+          const moodFrequencyResponse = await fetch(`http://localhost:8080/journal/mood-frequency?range=${timeRange}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          
+          if (!moodFrequencyResponse.ok) {
+            throw new Error('Failed to fetch mood frequency data');
+          }
+          
+          const moodFrequencyResult = await moodFrequencyResponse.json();
+          setMoodFrequency(moodFrequencyResult);
+        } else {
+          // Use demo data if not enough entries
+          setMoodData(demoMoodData);
+          setMoodFrequency(demoMoodFrequency);
+          setHasEnoughData(false);
+        }
         
         setLoading(false);
       } catch (err) {
+        console.error("Error fetching data:", err);
         setError(err.message);
+        
+        // Use demo data in case of error
+        setMoodData(demoMoodData);
+        setMoodFrequency(demoMoodFrequency);
+        setHasEnoughData(false);
+        
         setLoading(false);
       }
     };
-
+  
     fetchData();
-  }, [dateRange]);
+  }, [timeRange]);
 
-  // Prepare mood chart data
-  const moodChartData = {
-    labels: moodData.map(item => item.date),
-    datasets: [
-      {
-        label: 'Mood Score',
-        data: moodData.map(item => item.score),
-        borderColor: 'rgba(75, 192, 192, 1)',
-        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-        tension: 0.1,
-        fill: true
-      }
-    ]
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    window.location.href = '/login';
   };
 
-  const processMoodData = (entries) => {
-    console.log("Entries being processed:", entries); // Debug log
-    const moodFrequency = entries.reduce((acc, entry) => {
-      if (entry.mood) {
-        const moodKey = Object.keys(entry.mood).find(key => entry.mood[key]);
-        if (moodKey) {
-          acc[moodKey] = (acc[moodKey] || 0) + 1;
-        }
+  // Calculate mood statistics
+  const calculateStats = () => {
+    // Most common mood
+    let mostCommonMood = { mood: 'Neutral', count: 0 };
+    Object.entries(moodFrequency).forEach(([mood, count]) => {
+      if (count > mostCommonMood.count) {
+        mostCommonMood = { mood, count };
       }
-      return acc;
-    }, {});
-
-    // Count occurrences of each specific mood state
-    const specificMoodFrequency = entries.reduce((acc, entry) => {
-      if (entry.mood) {
-        Object.entries(entry.mood).forEach(([category, specificMood]) => {
-          if (specificMood) {
-            acc[specificMood] = (acc[specificMood] || 0) + 1;
-          }
-        });
+    });
+    
+    // Calculate average mood score
+    const moodScores = {
+      'Joyful': 7,
+      'Happy': 6,
+      'Calm': 5,
+      'Neutral': 4,
+      'Anxious': 3,
+      'Angry': 2,
+      'Sad': 2,
+      'Depressed': 1
+    };
+    
+    let totalScore = 0;
+    let totalEntries = 0;
+    
+    Object.entries(moodFrequency).forEach(([mood, count]) => {
+      if (moodScores[mood]) {
+        totalScore += moodScores[mood] * count;
+        totalEntries += count;
       }
-      return acc;
-    }, {});
-
-    return { moodFrequency, specificMoodFrequency }; // Correct placement of return
-  };
-  
-  const { moodFrequency, specificMoodFrequency } = processMoodData(entries);
-  
-  // Prepare chart data for main mood categories
-  const moodFrequencyData = {
-    labels: Object.keys(moodFrequency),
-    datasets: [{
-      label: 'Mood Frequency',
-      data: Object.values(moodFrequency),
-      backgroundColor: [
-        '#FF66B3', // joyful
-        '#42BFDD', // happy
-        '#BBE6E4', // calmAndContent
-        '#084B83', // angry
-        '#F0F6F6', // anxious
-        '#8A4FFF', // sad
-        '#FF9E7D'  // depressed
-      ],
-      borderWidth: 1
-    }]
-  };
-  
-  // Prepare chart data for specific mood states
-  const specificMoodData = {
-    labels: Object.keys(specificMoodFrequency),
-    datasets: [{
-      label: 'Specific Mood Frequency',
-      data: Object.values(specificMoodFrequency),
-      backgroundColor: Object.keys(specificMoodFrequency).map((_, i) => 
-        `hsl(${(i * 360 / Object.keys(specificMoodFrequency).length)}, 70%, 60%)`
-      ),
-      borderWidth: 1
-    }]
+    });
+    
+    const averageScore = totalEntries > 0 ? (totalScore / totalEntries).toFixed(2) : '0.00';
+    
+    // Recent mood
+    const recentMood = moodData.length > 0 ? moodData[moodData.length - 1].moodLabel : 'N/A';
+    
+    return {
+      mostCommon: mostCommonMood,
+      average: averageScore,
+      recent: recentMood,
+      total: totalEntries
+    };
   };
 
-  useEffect(() => {
-    console.log("Entries:", entries);
-    console.log("Mood Frequency:", moodFrequency);
-    console.log("Specific Mood Frequency:", specificMoodFrequency);
-  }, [entries, moodFrequency, specificMoodFrequency]);
+  // Get statistics
+  const stats = calculateStats();
 
-  // Tile content for calendar to highlight journaled dates
-  const tileContent = ({ date, view }) => {
-    if (view === 'month') {
-      const dateStr = date.toISOString().split('T')[0];
-      if (journaledDates.includes(dateStr)) {
-        return <div className="journal-dot"></div>;
-      }
+  // Create data for pie chart
+  const pieData = Object.entries(moodFrequency).map(([name, value]) => ({
+    name,
+    value
+  }));
+
+  // Custom tooltip for line chart
+  const CustomTooltip = ({ active, payload }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white p-2 border border-gray-200 shadow-md rounded">
+          <p className="font-medium">{payload[0].payload.date}</p>
+          <p className="text-sm">{payload[0].payload.moodLabel}: {payload[0].value}</p>
+        </div>
+      );
     }
     return null;
   };
 
+  // Y-axis tick formatter to show mood labels instead of numbers
+  const formatYAxis = (value) => {
+    const moodLabels = {
+      1: 'Depressed',
+      2: 'Sad/Anxious',
+      3: 'Angry',
+      4: 'Neutral',
+      5: 'Calm',
+      6: 'Happy',
+      7: 'Joyful'
+    };
+    return moodLabels[value] || '';
+  };
+
   if (loading) return (
-    <div className="flex items-center justify-center min-h-screen bg-[#f0f6f6] font-borel">
-      <div className="text-2xl text-[#084b83]">Loading your journal data...</div>
-    </div>
-  );
-  
-  if (error) return (
-    <div className="flex items-center justify-center min-h-screen bg-[#f0f6f6] font-borel">
-      <div className="text-2xl text-red-500">Error: {error}</div>
+    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="text-xl text-blue-600">Loading your account data...</div>
     </div>
   );
 
-  console.log("Journaled Dates:", journaledDates);
-  console.log("Mood Data:", moodData);
+  if (error) return (
+    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="text-xl text-red-500">Error: {error}</div>
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-[#f0f6f6] p-6 font-borel">
-      <header className="mb-8 text-center">
-        <h1 className="text-4xl font-bold text-[#084b83] mb-4">Welcome Back!</h1>
-        <div className="flex justify-center gap-6">
-          <div className="bg-[#bbe6e4] p-4 rounded-lg shadow-md w-40 text-center">
-            <h3 className="text-[#084b83]">Total Entries</h3>
-            <p className="text-3xl font-bold text-[#ff66b3]">{entries.length}</p>
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-6xl mx-auto">
+        {/* User Profile Section */}
+        <section className="bg-white rounded-xl shadow-md p-6 mb-6">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-800 mb-2">
+                {user?.name || 'User'}
+              </h1>
+              <p className="text-gray-600 mb-1">
+                <span className="font-semibold">Email:</span> {user?.email}
+              </p>
+              <p className="text-gray-600 mb-1">
+                <span className="font-semibold">Phone:</span> {user?.phoneNumber || 'Not provided'}
+              </p>
+              <p className="text-gray-600">
+                <span className="font-semibold">Member since:</span> {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Unknown'}
+              </p>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="mt-4 md:mt-0 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+            >
+              Logout
+            </button>
           </div>
-          <div className="bg-[#bbe6e4] p-4 rounded-lg shadow-md w-40 text-center">
-            <h3 className="text-[#084b83]">Current Streak</h3>
-            <p className="text-3xl font-bold text-[#ff66b3]">{streak} days</p>
-          </div>
-          <div className="bg-[#bbe6e4] p-4 rounded-lg shadow-md w-40 text-center">
-            <h3 className="text-[#084b83]">Last Entry</h3>
-            <p className="text-xl font-bold text-[#ff66b3]">
-              {recentEntries[0]?.createdAt 
-                ? new Date(recentEntries[0].createdAt).toLocaleDateString() 
-                : 'N/A'}
-            </p>
-          </div>
-        </div>
-      </header>
+        </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Mood Trends Section */}
-        <section className="bg-white p-6 rounded-xl shadow-lg">
-          <h2 className="text-2xl font-bold text-[#084b83] mb-4">Your Mood Trends</h2>
-          <div className="flex gap-2 mb-4">
+        {/* Mood Analytics Section */}
+        <section className="mb-6">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Your Mood Analytics</h2>
+          
+          {/* Time Range Selector */}
+          <div className="flex gap-2 mb-6">
             <button 
-              className={`px-4 py-2 rounded-full ${dateRange === '7days' ? 'bg-[#42bfdd] text-white' : 'bg-[#bbe6e4] text-[#084b83]'}`}
-              onClick={() => setDateRange('7days')}
+              onClick={() => setTimeRange('7days')}
+              className={`px-4 py-2 rounded-lg ${timeRange === '7days' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
             >
               Last 7 Days
             </button>
             <button 
-              className={`px-4 py-2 rounded-full ${dateRange === '1month' ? 'bg-[#42bfdd] text-white' : 'bg-[#bbe6e4] text-[#084b83]'}`}
-              onClick={() => setDateRange('1month')}
+              onClick={() => setTimeRange('30days')}
+              className={`px-4 py-2 rounded-lg ${timeRange === '30days' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
             >
               Last 30 Days
             </button>
+            <button 
+              onClick={() => setTimeRange('all')}
+              className={`px-4 py-2 rounded-lg ${timeRange === 'all' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+            >
+              All Time
+            </button>
           </div>
-          <div className="h-64">
-            <Line 
-              data={moodChartData} 
-              options={{
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                  legend: {
-                    position: 'top',
-                  },
-                  tooltip: {
-                    callbacks: {
-                      label: function(context) {
-                        return `Mood score: ${context.raw}`;
-                      }
-                    }
-                  }
-                },
-                scales: {
-                  y: {
-                    min: 0,
-                    max: 7,
-                    ticks: {
-                      stepSize: 1,
-                      callback: function(value) {
-                        const moods = {
-                          1: 'Depressed',
-                          2: 'Sad',
-                          3: 'Anxious',
-                          4: 'Angry',
-                          5: 'Calm',
-                          6: 'Happy',
-                          7: 'Joyful'
-                        };
-                        return moods[value] || '';
-                      }
-                    }
-                  }
-                }
-              }} 
-            />
-          </div>
-        </section>
 
-        {/* Mood Frequency Section */}
-        <section className="bg-white p-6 rounded-xl shadow-lg">
-          <h2 className="text-2xl font-bold text-[#084b83] mb-4">Mood Categories</h2>
-          <div className="h-64">
-            <Bar 
-              data={moodFrequencyData}
-              options={{
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                  legend: {
-                    display: false
-                  },
-                  tooltip: {
-                    callbacks: {
-                      label: (context) => `${context.dataset.label}: ${context.raw} entries`
-                    }
-                  }
-                }
-              }}
-            />
-          </div>
-        </section>
-
-        {/* Specific Mood States */}
-        <section className="bg-white p-6 rounded-xl shadow-lg">
-          <h2 className="text-2xl font-bold text-[#084b83] mb-4">Detailed Mood States</h2>
-          <div className="h-96">
-            <Bar 
-              data={specificMoodData}
-              options={{
-                indexAxis: 'y',
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                  legend: {
-                    display: false
-                  },
-                  tooltip: {
-                    callbacks: {
-                      label: (context) => `${context.dataset.label}: ${context.raw} entries`
-                    }
-                  }
-                }
-              }}
-            />
-          </div>
-        </section>
-
-        {/* Mood Insights */}
-        <section className="bg-white p-6 rounded-xl shadow-lg">
-          <h2 className="text-2xl font-bold text-[#084b83] mb-4">Mood Insights</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-[#f0f6f6] p-4 rounded-lg">
-              <h3 className="text-lg font-semibold text-[#ff66b3]">Most Common Mood</h3>
-              <p className="text-[#084b83]">
-                {Object.keys(moodFrequency).length > 0 
-                  ? `${Object.entries(moodFrequency).sort((a, b) => b[1] - a[1])[0][0]} (${Object.entries(moodFrequency).sort((a, b) => b[1] - a[1])[0][1]} times)`
-                  : 'No data yet'}
-              </p>
+          {/* Demo Data Notice */}
+          {!hasEnoughData && (
+            <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded-lg mb-6">
+              <p className="font-bold">Not enough data</p>
+              <p>You need at least 7 mood entries to see personalized charts. We're showing demo data for now.</p>
             </div>
-            <div className="bg-[#f0f6f6] p-4 rounded-lg">
-              <h3 className="text-lg font-semibold text-[#42bfdd]">Most Specific Mood</h3>
-              <p className="text-[#084b83]">
-                {Object.keys(specificMoodFrequency).length > 0
-                  ? `${Object.entries(specificMoodFrequency).sort((a, b) => b[1] - a[1])[0][0]} (${Object.entries(specificMoodFrequency).sort((a, b) => b[1] - a[1])[0][1]} times)`
-                  : 'No data yet'}
-              </p>
-            </div>
-          </div>
-        </section>
-    
-        {/* Journal Calendar Section */}
-        <section className="bg-white p-6 rounded-xl shadow-lg">
-          <h2 className="text-2xl font-bold text-[#084b83] mb-4">Journal Calendar</h2>
-          <Calendar
-            onChange={setSelectedDate}
-            value={selectedDate}
-            tileContent={tileContent}
-            className="border-none"
-          />
-          <p className="text-sm text-[#084b83] mt-2 text-center">
-            Dots indicate days you journaled
-          </p>
-        </section>
-
-        {/* Recent Entries Section */}
-        <section className="bg-white p-6 rounded-xl shadow-lg">
-          <h2 className="text-2xl font-bold text-[#084b83] mb-4">Recent Entries</h2>
-          {recentEntries.length > 0 ? (
-            <div className="space-y-4">
-              {recentEntries.map(entry => (
-                <div key={entry._id} className="bg-[#f0f6f6] p-4 rounded-lg">
-                  <h3 className="text-xl font-bold text-[#ff66b3]">{entry.title}</h3>
-                  <p className="text-sm text-[#084b83]">
-                    {new Date(entry.createdAt).toLocaleDateString()}
-                  </p>
-                  <p className="text-[#42bfdd] font-semibold">
-                    Mood: {entry.mood ? Object.keys(entry.mood).find(key => entry.mood[key]) : 'N/A'}
-                  </p>
-                  <p className="text-[#084b83] mt-2">
-                    {entry.content.substring(0, 100)}...
-                  </p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-[#084b83]">No recent entries found</p>
           )}
-        </section>
 
-        {/* Gratitude Section */}
-        <section className="bg-white p-6 rounded-xl shadow-lg">
-          <h2 className="text-2xl font-bold text-[#084b83] mb-4">What You're Grateful For</h2>
-          {entries.some(e => e.grateful?.length > 0) ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {entries
-                .filter(e => e.grateful?.length > 0)
-                .slice(0, 4)
-                .map(entry => (
-                  <div key={entry._id} className="bg-[#f0f6f6] p-4 rounded-lg">
-                    <p className="text-sm text-[#084b83]">
-                      {new Date(entry.createdAt).toLocaleDateString()}
-                    </p>
-                    <ul className="list-disc pl-5 mt-2">
-                      {entry.grateful.map((item, i) => (
-                        <li key={i} className="text-[#084b83]">{item}</li>
-                      ))}
-                    </ul>
+          {/* Charts Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Mood Trend Chart */}
+            <div className="bg-white p-6 rounded-xl shadow-md">
+              <h3 className="text-xl font-semibold text-gray-700 mb-4">Mood Trend</h3>
+              <div className="h-64">
+                {moodData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={moodData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                      <XAxis dataKey="date" />
+                      <YAxis 
+                        domain={[1, 7]} 
+                        tickCount={7} 
+                        tickFormatter={formatYAxis} 
+                      />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Line 
+                        type="monotone" 
+                        dataKey="score" 
+                        stroke="#3b82f6" 
+                        strokeWidth={2}
+                        dot={{ stroke: '#3b82f6', strokeWidth: 2, r: 4, fill: '#fff' }}
+                        activeDot={{ r: 6, fill: '#3b82f6' }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-gray-500">No mood data available for this time period</p>
                   </div>
-                ))}
+                )}
+              </div>
             </div>
-          ) : (
-            <p className="text-[#084b83]">No gratitude entries yet</p>
-          )}
+
+            {/* Mood Distribution Chart */}
+            <div className="bg-white p-6 rounded-xl shadow-md">
+              <h3 className="text-xl font-semibold text-gray-700 mb-4">Mood Distribution</h3>
+              <div className="h-64">
+                {Object.keys(moodFrequency).length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={pieData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                      >
+                        {pieData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[entry.name] || '#999'} />
+                        ))}
+                      </Pie>
+                      <Legend />
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-gray-500">No mood distribution data available for this time period</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         </section>
 
-        {/* Reflections Section */}
-        <section className="bg-white p-6 rounded-xl shadow-lg">
-          <h2 className="text-2xl font-bold text-[#084b83] mb-4">Your Reflections</h2>
-          {entries.some(e => e.selfReflection) ? (
-            <div className="space-y-4">
-              {entries
-                .filter(e => e.selfReflection)
-                .slice(0, 2)
-                .map(entry => (
-                  <div key={entry._id} className="bg-[#f0f6f6] p-4 rounded-lg">
-                    <p className="text-sm text-[#084b83]">
-                      {new Date(entry.createdAt).toLocaleDateString()}
-                    </p>
-                    <p className="text-[#084b83] mt-2">
-                      {entry.selfReflection.substring(0, 150)}...
-                    </p>
-                  </div>
-                ))}
+        {/* Mood Insights Section */}
+        <section className="bg-white rounded-xl shadow-md p-6">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Mood Insights</h2>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Most Common Mood */}
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <h3 className="text-blue-600 text-lg font-semibold">Most Common Mood</h3>
+              <p className="text-gray-700">{stats.mostCommon.mood} ({stats.mostCommon.count} entries)</p>
             </div>
-          ) : (
-            <p className="text-[#084b83]">No reflections yet</p>
-          )}
+
+            {/* Average Mood */}
+            <div className="bg-green-50 p-4 rounded-lg">
+              <h3 className="text-green-600 text-lg font-semibold">Average Mood</h3>
+              <p className="text-gray-700">{stats.average}</p>
+            </div>
+
+            {/* Recent Mood */}
+            <div className="bg-purple-50 p-4 rounded-lg">
+              <h3 className="text-purple-600 text-lg font-semibold">Recent Mood</h3>
+              <p className="text-gray-700">{stats.recent}</p>
+            </div>
+
+            {/* Total Entries */}
+            <div className="bg-yellow-50 p-4 rounded-lg">
+              <h3 className="text-yellow-600 text-lg font-semibold">Total Entries</h3>
+              <p className="text-gray-700">{stats.total}</p>
+            </div>
+          </div>
         </section>
       </div>
-      {console.log("Entries for reflections and gratitudes:", entries)}
     </div>
   );
-}
+};
 
 export default AccountPage;

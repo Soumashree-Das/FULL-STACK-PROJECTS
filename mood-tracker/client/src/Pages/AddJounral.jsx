@@ -202,7 +202,7 @@ function AddJournal() {
     try {
       const token = localStorage.getItem('token');
       
-      const response = await axios.post('http://localhost:8080/journal/addJournal', journalData, {
+      const response = await axios.post('http://localhost:8080/journal/create', journalData, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
