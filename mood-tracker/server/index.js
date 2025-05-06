@@ -8,11 +8,11 @@ import JournalRouters from "./src/routes/journalEntry.routes.js";
 const app = express();
 
 app.use(cors({
-    origin:'https://full-stack-projects-nine.vercel.app',
+    origin:'http://localhost:5173',
     credentials:true
 }))
 
-app.options("*", cors()); // enable pre-flight for all routes
+// app.options("*", cors()); // enable pre-flight for all routes
 
 app.use(express.json());
 app.use("/user",UserRouter);

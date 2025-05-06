@@ -15,9 +15,11 @@ function RegisterUser() {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log("Submitting form data:", formData);
-    axios.post('https://full-stack-projects-yvmx.onrender.com/user/register', formData)
+    axios.post('http://localhost:8080/user/register', formData)
       .then(result => {
+        alert("Registratin successful!🥳 please login to continue!");
         console.log("Registration successful:", result.data);
+        navigate('/login')
          // redirect after successful registration
       })
       .catch(err => {
